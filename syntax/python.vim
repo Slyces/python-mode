@@ -75,14 +75,18 @@ endif
     syn keyword pythonStatement pass raise
     syn keyword pythonStatement global nonlocal assert
     syn keyword pythonStatement yield
-    syn keyword pythonLambdaExpr lambda
     syn keyword pythonStatement with as
+
+    " ------------------ conceal lambda ------------------ "
+    "syn keyword pythonLambdaExpr lambda
+    syn match pythonLambdaExpr "\<lambda\>" conceal cchar=λ
+    " ---------------------------------------------------- "
 
     syn keyword pythonStatement def nextgroup=pythonFunction skipwhite
     syn match pythonFunction "\%(\%(def\s\|@\)\s*\)\@<=\h\%(\w\|\.\)*" contained nextgroup=pythonVars
     syn region pythonVars start="(" skip=+\(".*"\|'.*'\)+ end=")" contained contains=pythonParameters transparent keepend
     syn match pythonParameters "[^,]*" contained contains=pythonParam skipwhite
-    syn match pythonParam "[^,]*" contained contains=pythonExtraOperator,pythonLambdaExpr,pythonBuiltinObj,pythonBuiltinType,pythonConstant,pythonString,pythonNumber,pythonBrackets,pythonSelf,pythonComment skipwhite
+    syn match pythonParam "[^,]*" contained contains=pythonExtraOperator,pythonLambdaExpr,pythonBuiltinObj,pythonBuiltinType,pythonConstant,pythonString,pythonNumber,pythonBrackets,pythonSelf,pythonComment,pythonTypeHint skipwhite
     syn match pythonBrackets "{[(|)]}" contained skipwhite
 
     syn keyword pythonStatement class nextgroup=pythonClass skipwhite
@@ -93,11 +97,35 @@ endif
     syn keyword pythonRepeat        for while
     syn keyword pythonConditional   if elif else
     syn keyword pythonInclude       import from
+    syn keyword pythonOperator      is
     syn keyword pythonException     try except finally
-    syn keyword pythonOperator      and in is not or
 
-    syn match pythonExtraOperator "\%([~!^&|/%+-]\|\%(class\s*\)\@<!<<\|<=>\|<=\|\%(<\|\<class\s\+\u\w*\s*\)\@<!<[^<]\@=\|===\|==\|=\~\|>>\|>=\|=\@<!>\|\.\.\.\|\.\.\|::\)"
+    " --------------------- conceal ---------------------- "
+    syn keyword pythonOperator      and conceal cchar=∧
+    syn keyword pythonOperator      or  conceal cchar=∨
+
+    syn match pythonOperator "\<not\>"
+    syn match pythonOperator "\%(is \)\@<!\<not\%( \|\>\)" conceal cchar=¬
+    syn match pythonOperator "\<in\>" conceal cchar=∈
+    syn match pythonOperator "\<not in\>" conceal cchar=∉
+    " ---------------------------------------------------- "
+
+    syn match pythonExtraOperator "\%([~!^&|/%+-][^>]\@<!\|\%(class\s*\)\@<!<<\|<=>\|<=\|\%(<\|\<class\s\+\u\w*\s*\)\@<!<[^<]\@=\|===\|==\|=\~\|>>\|>=\|[=-]\@<!>\|\.\.\.\|\.\.\|::\)"
     syn match pythonExtraPseudoOperator "\%(-=\|/=\|\*\*=\|\*=\|&&=\|&=\|&&\|||=\||=\|||\|%=\|+=\|!\~\|!=\)"
+
+    " ---------------------- custom ---------------------- "
+    "syn match pythonArrow "->" contained
+    syn match pythonTypeHint "\v: .{-}(\[.*\])? ?[,\)=]"ms=s+2,me=e-1 contains=pythonBuiltinTypeHint contained
+    syn match pythonReturnHint "\v-\> *.{-}(\[.*\])?:$"ms=s+2,me=e-1 contains=pythonBuiltinTypeHint
+    " ---------------------------------------------------- "
+
+
+    " --------------------- conceal ---------------------- "
+    syn match pythonExtraOperator "<=" conceal cchar=≤
+    syn match pythonExtraOperator ">=" conceal cchar=≥
+    syn match pythonExtraOperator "=\@<!===\@!" conceal cchar=≡
+    syn match pythonExtraPseudoOperator "!=" conceal cchar=≢
+    " ---------------------------------------------------- "
 
     if !g:pymode_syntax_print_as_function
         syn keyword pythonStatement print
@@ -262,27 +290,64 @@ endif
 
     " Builtin objects and types
     if g:pymode_syntax_builtin_objs
-        syn keyword pythonBuiltinObj True False Ellipsis None NotImplemented
+        syn keyword pythonBuiltinObj True False Ellipsis NotImplemented
         syn keyword pythonBuiltinObj __debug__ __doc__ __file__ __name__ __package__
+
+        " ------------------- conceal -------------------- "
+        syn match pythonBuiltinObj "\<None\>" conceal cchar=∅
+        syn match N1               "Non" conceal contained cchar=∅
+        syn match N2               "e:"me=e-1 conceal contained cchar= 
+        syn match pythonBuiltinObj "\<None\>:"me=e-1 contains=N1,N2
+        syn match pythonConstant "\<\%(math\.\)\?pi\>" conceal cchar=π
+        " ------------------------------------------------ "
+        "
     endif
 
     if g:pymode_syntax_builtin_types
         syn keyword pythonBuiltinType type object
         syn keyword pythonBuiltinType str basestring unicode buffer bytearray bytes chr unichr
-        syn keyword pythonBuiltinType dict int long bool float complex set frozenset list tuple
+        syn keyword pythonBuiltinType dict long bool set frozenset list tuple
         syn keyword pythonBuiltinType file super
+
+        " ------------------ type hints ------------------ "
+        syn keyword pythonBuiltinTypeHint type object contained
+        syn keyword pythonBuiltinTypeHint str basestring unicode contained
+        syn keyword pythonBuiltinTypeHint buffer bytearray bytes chr unichr contained
+        syn keyword pythonBuiltinTypeHint dict long bool set frozenset list tuple contained
+        syn keyword pythonBuiltinTypeHint file super contained
+        " ------------------------------------------------ "
+
+        " ------------------- conceal -------------------- "
+        syn match pythonOperator "\<sum\>" conceal cchar=∑
+
+        syn match pythonStatement "\<\%(math\.\)\?sqrt\>" conceal cchar=√
+        syn match pythonStatement "\<\%(math\.\)ceil\>" conceal cchar=⌈
+        syn match pythonStatement "\<\%(math\.\)\?floor\>" conceal cchar=⌊
+
+        syn match pythonStatement "\<int\>" conceal cchar=ℤ
+        syn match pythonStatement "\<float\>" conceal cchar=ℝ
+        syn match pythonStatement "\<complex\>" conceal cchar=ℂ
+        " ------------------------------------------------ "
+
     endif
 
     " Builtin functions
     if g:pymode_syntax_builtin_funcs
-        syn keyword pythonBuiltinFunc   __import__ abs all any apply
+        syn keyword pythonBuiltinFunc   __import__ abs apply
         syn keyword pythonBuiltinFunc   bin callable classmethod cmp coerce compile
         syn keyword pythonBuiltinFunc   delattr dir divmod enumerate eval execfile filter
         syn keyword pythonBuiltinFunc   format getattr globals locals hasattr hash help hex id
-        syn keyword pythonBuiltinFunc   input intern isinstance issubclass iter len map max min
+        syn keyword pythonBuiltinFunc   input intern isinstance issubclass iter map max min
         syn keyword pythonBuiltinFunc   next oct open ord pow property range xrange
         syn keyword pythonBuiltinFunc   raw_input reduce reload repr reversed round setattr
         syn keyword pythonBuiltinFunc   slice sorted staticmethod sum vars zip
+
+        " ------------------- conceal -------------------- "
+        syn match pythonBuiltinFunc "\<all\>" conceal cchar=∀
+        syn match pythonBuiltinFunc "\<any\>" conceal cchar=∃
+
+        syn match pythonBuiltinFunc "\<len\>" conceal cchar=#
+        " ------------------------------------------------ "
 
         if g:pymode_syntax_print_as_function
             syn keyword pythonBuiltinFunc   print
@@ -344,6 +409,12 @@ endif
     hi def link  pythonBrackets     Normal
     hi def link  pythonClassParameters Normal
     hi def link  pythonSelf         Identifier
+    hi def link  pythonTypeHint     Structure
+    hi def link  pythonReturnHint   Structure
+    hi def link  pythonBuiltinTypeHint  Type
+
+    hi def link  H1                 pythonBuiltinType
+    hi def link  H2                 pythonBuiltinType
 
     hi def link  pythonConditional  Conditional
     hi def link  pythonRepeat       Repeat
@@ -398,5 +469,8 @@ endif
     hi def link  pythonBuiltinFunc  Function
 
     hi def link  pythonExClass      Structure
+
+    hi! def link Conceal            Operator
+    hi! link     Conceal            Operator
 
 " }}}
