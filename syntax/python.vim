@@ -314,7 +314,7 @@ endif
         syn keyword pythonBuiltinTypeHint str basestring unicode contained
         syn keyword pythonBuiltinTypeHint buffer bytearray bytes chr unichr contained
         syn keyword pythonBuiltinTypeHint dict long bool set frozenset list tuple contained
-        syn keyword pythonBuiltinTypeHint file super contained
+        syn keyword pythonBuiltinTypeHint int float file super contained
         " ------------------------------------------------ "
 
         " ------------------- conceal -------------------- "
