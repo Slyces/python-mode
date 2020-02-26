@@ -116,6 +116,7 @@ endif
     " ---------------------- custom ---------------------- "
     "syn match pythonArrow "->" contained
     syn match pythonTypeHint "\v: .{-}(\[.*\])? ?[,\)=]"ms=s+2,me=e-1 contains=pythonBuiltinTypeHint contained
+    syn match pythonTypeHint "\v^\s*(\a|_|\.)+\s*:\s*\zs(\a|\.)+\ze\s*\=" contains=pythonBuiltinTypeHint
     syn match pythonReturnHint "\v-\> *.{-}(\[.*\])?:$"ms=s+2,me=e-1 contains=pythonBuiltinTypeHint
     " ---------------------------------------------------- "
 
